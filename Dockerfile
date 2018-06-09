@@ -1,5 +1,5 @@
-FROM alpine:3.6
-MAINTAINER Tobias L. Maier <me@tobiasmaier.info>
+FROM alpine:latest
+LABEL maintainer="Xavier Ngansop <ngaxavi@gmail.com>"
 
 RUN apk add --no-cache \
   bash \

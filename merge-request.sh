@@ -11,7 +11,16 @@ fi
 [[ $CI_PROJECT_URL =~ ^https?://[^/]+ ]] && HOST="${BASH_REMATCH[0]}/api/v4/projects/"
 
 # Look which is the default branch
-TARGET_BRANCH=`curl --silent "${HOST}${CI_PROJECT_ID}" --header "PRIVATE-TOKEN:${GITLAB_PRIVATE_TOKEN}" | jq --raw-output '.default_branch'`;
+if [ -z "$CI_TARGET_BRANCH" ]; then
+    TARGET_BRANCH=`curl --silent "${HOST}${CI_PROJECT_ID}" --header "PRIVATE-TOKEN:${GITLAB_PRIVATE_TOKEN}" | jq --raw-output '.default_branch'`;
+else
+    TARGET_BRANCH=$CI_TARGET_BRANCH;
+fi
+
+# Find out if the source branch is protected
+# if yes remove the flag `remove_source_branch`
+BRANCH_INFO=`curl --silent "${HOST}${CI_PROJECT_ID}/repository/branches/${CI_COMMIT_REF_NAME}" --header "PRIVATE-TOKEN:${GITLAB_PRIVATE_TOKEN}"`;
+PROTECTED=`echo ${BRANCH_INFO} | jq --raw-output '.protected'`;
 
 # The description of our new MR, we want to remove the branch after the MR has
 # been closed
@@ -19,7 +28,7 @@ BODY="{
     \"id\": ${CI_PROJECT_ID},
     \"source_branch\": \"${CI_COMMIT_REF_NAME}\",
     \"target_branch\": \"${TARGET_BRANCH}\",
-    \"remove_source_branch\": true,
+    \"remove_source_branch\": ${PROTECTED},
     \"title\": \"WIP: ${CI_COMMIT_REF_NAME}\",
     \"assignee_id\":\"${GITLAB_USER_ID}\"
 }";

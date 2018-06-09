@@ -23,23 +23,16 @@ This is necessary to raise the Merge Request on your behalf.
 Add the following to your `.gitlab-ci.yml` file:
 
 ```yaml
-stages:
-  - openMr
-  - otherStages
-
-Open Merge Request:
-  image: tmaier/gitlab-auto-merge-request:1
-  before_script: [] # We do not need any setup work, let's remove the global one (if any)
+after_success:
+  image: ngaxavi/gitlab-auto-merge-request
   variables:
     GIT_STRATEGY: none # We do not need a clone of the GIT repository to create a Merge Request
-  stage: openMr
-  only:
-    - /^feature\/*/ # We have a very strict naming convention
+    CI_TARGET_BRANCH: develop
+  except:
+    - master # We have a very strict naming convention
   script:
     - merge-request.sh # The name of the script
 ```
-
-You can see this in action at [`.gitlab-ci.yml` of this project](.gitlab-ci.yml).
 
 ## Docker images
 
@@ -72,3 +65,6 @@ Following are not considered as API according to the spec:
 
 * Docker part: [Tobias L. Maier](http://tobiasmaier.info)
 * Script and idea: [Riccardo Padovani](https://rpadovani.com)
+
+## License 
+MIT
